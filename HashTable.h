@@ -50,51 +50,25 @@ public:
 	}
 
 	friend std::ostream&operator<<(std::ostream &out, const HashTable<V> &th){
-		
-		out << "Tabla Hash: " << std::endl;
-		out << "Capacidad: " << th.max << std::endl;
-		out << "Número de elementos: " << th.n << std::endl;
-		//out << "Factor de carga: " << th.n/th.max << std::endl;
-		out << "Elementos: " << std::endl;
-		out << "Posición" << "\t" << "Clave" << "\t" << "Valor" << std::endl;
-		out << "--------------------------------------------------" << std::endl;
-		
-		for(int i=0; i<th.max; i++){
-			out << i << "\t" << th.table[i] << std::endl;
-		}
-		
-		return out;
-
-		/*out << "List -> [";
-			for(int i=0; i<max; i++){
-			out << table[i].n.key;
-			}
-		*/		//Preguntar
-	
-	}
+		 out << "HashTable [entries: " << th.n << ", capacity: " << th.max << "]" << endl;
+            out << "==============" << endl << endl;
+            for(int i = 0; i < th.max; i++){
+                out << "== Cubeta " << i << " =="<< endl << endl;
+                out << "List => ";
+                for(int j = 0; j < th.table[i].size(); j++){
+                    out <<	"[" << th.table[i][j].key << ":" << th.table[i][j].value << "] ";
+                } 
+                out << endl << endl;
+            }  
+            out << "==============" << endl << endl;
+			return out;
+	    }
 
 	V operator[](std::string key){
 		//Sobrecarga del operador []. Devuelve el valor correspondiente a key. Si no existe, lanza la excepción std::runtime_error.
-
-		int pos = h(key);
-		/*Cálculo de posición hash (pos):
-: Se calcula la posición hash de la clave utilizando la función h. La variable pos representa la posición en la tabla de dispersión donde se almacenará el valor asociado a la clave.*/
-
-		TableEntry<V> entry(key, V());
-
-	/*Creación de una entrada (TableEntry<V> entry(key, V());):
-
-Se crea un objeto TableEntry llamado entry utilizando la clave proporcionada y un valor predeterminado para el tipo V. Esto se hace para buscar esta entrada en la lista correspondiente de la tabla de dispersión.*/
-		
-		int posEntry = table[pos].search(entry);
-
-		if(posEntry == -1){
-			throw std::runtime_error("No existe la clave");
-		}else{
-			return table[pos].get(posEntry).value;
-		}
-
-	}
+ 			V kValue = search(key);
+            return kValue;
+        }
 	//Poner las heredadas
 	//
 	//HEREDADAS:
@@ -102,38 +76,33 @@ Se crea un objeto TableEntry llamado entry utilizando la clave proporcionada y u
 	void insert(std::string key, V value) override{
 		//Inserta el par key->value en el diccionario. Lanza una excepción std::runtime_error si key ya existe en el diccionario.
 
-		int pos = h(key);
-		TableEntry<V> entry(key, value);
-
-		if(table[pos].search(entry) == -1){
-			table[pos].append(entry);
-			n++;
-		}else{
-			throw std::runtime_error("La clave ya existe");
-		}
+		int pos = h(key); 
+            for(int i = 0; i < table[pos].size(); i++) {
+                if(table[pos][i].key == key) throw runtime_error("Key alredy exists!");
+            } 
+            TableEntry newEntry(key, value);
+            table[pos].append(newEntry); 
+        }
 
 		/*	table[h(key)].append(TableEntry(key, value));*/	
 
 	//hay que comprobar que no exista ya la key
 
-
-	}
 	
 	V search(std::string key) override{
 		//Busca el valor correspondiente a key. Devuelve el valor value asociado si key está en el diccionario. Si no se encuentra, lanza una excepción std::runtime_error.
 
 		int pos = h(key);
-		TableEntry<V> entry(key, V());
-
-		int posEntry = table[pos].search(entry);
-
-		if(posEntry == -1){
-			throw std::runtime_error("No existe la clave");
-		}else{
-			return table[pos].get(posEntry).value;
-		}
-
-	}
+            V kValue = -1;
+            for(int i = 0; i < table[pos].size(); i++){
+                if(table[pos][i].key == key){
+                    kValue = table[pos][i].value;
+                    break; 
+                } 
+            } 
+            if(kValue == -1)throw runtime_error("Key not found!");
+            return kValue;
+    }   
 	
 	 V remove(string key) override {
             int i;
