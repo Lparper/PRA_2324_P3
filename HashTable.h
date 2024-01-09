@@ -8,6 +8,7 @@
 #include "TableEntry.h"
 
 #include "../PRA_2324_P1/ListLinked.h"
+using namespace std;
 
 template <typename V>
 class HashTable: public Dict<V> {
@@ -35,40 +36,44 @@ public:
 	HashTable(int size){
 
 	n = 0;
-	max = 0;
+	max = size;
 	table = new ListLinked<TableEntry<V>>[size];
 				     
 	}
 
 	~HashTable(){
-		delete[] table;
-	}
+		 for( int i=0; i<max;i++)//recorre toda la tabla 
+			 table[i].~ListLinked();//y en cada indice de la tabla elimina listas
+		delete[] table;}//como se ha creado con new se destruye asi y como es de arrays tiene los corchetes
 
 	int capacity(){
 	
 		return max;
 	}
 
-	friend std::ostream&operator<<(std::ostream &out, const HashTable<V> &th){
-		 out << "HashTable [entries: " << th.n << ", capacity: " << th.max << "]" << endl;
-            out << "==============" << endl << endl;
-            for(int i = 0; i < th.max; i++){
-                out << "== Cubeta " << i << " =="<< endl << endl;
-                out << "List => ";
-                for(int j = 0; j < th.table[i].size(); j++){
-                    out <<	"[" << th.table[i][j].key << ":" << th.table[i][j].value << "] ";
-                } 
-                out << endl << endl;
-            }  
-            out << "==============" << endl << endl;
-			return out;
-	    }
+	friend ostream& operator<<(std::ostream &out, const HashTable<V> &th){
+		 out<<"HashTable[Entries: "<<th.n << ",Capacity:" <<th.max << "]\n" << "\n"; 
+		 for(int i=0; i < th.max;i++){//recorremos tabla
+			 out << "Cubeta : " <<i<< "\n";
+			  out << th.table[i]<<std::endl;
+		 }
+
+
+
+		return out;
+
+	}
 
 	V operator[](std::string key){
 		//Sobrecarga del operador []. Devuelve el valor correspondiente a key. Si no existe, lanza la excepción std::runtime_error.
- 			V kValue = search(key);
-            return kValue;
-        }
+ 			 int pos = table[h(key)].search(key);
+		if(pos < 0)// no existe posicion
+			throw std::runtime_error("clave no  encontrada");
+		
+		V aux = table[h(key)].get(pos).value;//devuelve valor correspondiente a jkey
+		return aux;
+
+		 }
 	//Poner las heredadas
 	//
 	//HEREDADAS:
@@ -76,13 +81,16 @@ public:
 	void insert(std::string key, V value) override{
 		//Inserta el par key->value en el diccionario. Lanza una excepción std::runtime_error si key ya existe en el diccionario.
 
-		int pos = h(key); 
-            for(int i = 0; i < table[pos].size(); i++) {
-                if(table[pos][i].key == key) throw runtime_error("Key alredy exists!");
-            } 
-            TableEntry newEntry(key, value);
-            table[pos].append(newEntry); 
-        }
+		int pos = table[h(key)].search(key);//llamamos pos a h(key)
+
+                if(pos >= 0)
+                        throw std::runtime_error("Ya introducido");
+
+		TableEntry<V> aux(key, value);//tabla auxiliar para meter valor y key 
+		table[h(key)].prepend(aux);
+		n++;//aumenta tamaño cubetas ocupadas
+				 //comprobar q no exista ya la key
+	}
 
 		/*	table[h(key)].append(TableEntry(key, value));*/	
 
@@ -92,29 +100,27 @@ public:
 	V search(std::string key) override{
 		//Busca el valor correspondiente a key. Devuelve el valor value asociado si key está en el diccionario. Si no se encuentra, lanza una excepción std::runtime_error.
 
-		int pos = h(key);
-            V kValue = -1;
-            for(int i = 0; i < table[pos].size(); i++){
-                if(table[pos][i].key == key){
-                    kValue = table[pos][i].value;
-                    break; 
-                } 
-            } 
-            if(kValue == -1)throw runtime_error("Key not found!");
-            return kValue;
-    }   
+         int hash = h(key);
+		int pos = table[hash].search(key);
+
+                if(pos < 0)
+                        throw std::runtime_error("No encontrado");
+
+                V aux = table[hash].get(pos).value;
+                return aux;
+	}  
 	
 	 V remove(string key) override {
-            int i;
-            int pos = h(key);
-            for(i = 0; i < table[pos].size(); i++) {
-                if(table[pos][i].key == key) break;
-            }
-            if(i == (table[pos].size())) throw runtime_error("Key not found!");
-            V returnValue = (table[pos].remove(i)).value; 
+           	int pos = table[h(key)].search(key);//guardamosposicion
 
-            return returnValue; 
-        }
+                if(pos > max || pos < 0)//fuera del rango 
+                        throw std::runtime_error("No encontrado");
+
+		V aux = table[h(key)].remove(pos).value;//llamamos a lss funciones de list
+		n--;//dismuniumos cubetas
+		return aux;
+	}
+
 
     
 	
