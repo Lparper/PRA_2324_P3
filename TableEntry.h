@@ -6,43 +6,45 @@
 
 template <typename V> 
 class TableEntry {
-	    public:
+    public:
+     std::string key;
+     V value;
+     TableEntry(std::string key, V value){
+	    this -> key= key;
+	    this->value = value;
+     }
+     TableEntry(std::string key){
+    this->key = key;
+    
+     }
+     TableEntry(){
+	     key="";}
 
-		    //atributos
-		    std::string key;
-		    V value;
+     friend bool operator==(const TableEntry<V> &te1, const TableEntry<V> &te2){
+	     return te1.key==te2.key;
+     }// podria poner if(te1.key==..) return true;
+     friend bool operator!=(const TableEntry<V> &te1, const TableEntry<V> &te2){
+	      return te1.key!=te2.key;
 
-		TableEntry(std::string key, V value){
-		this -> key = key;
-		this -> value = value;
-		}
-
-		TableEntry(std::string key){
-		this-> key = key;
-		}
-
-		TableEntry(){
-		this -> key = "";
-		}
-
-		friend bool operator==(const TableEntry<V> &te1, const TableEntry<V> &te2){
-		if(te1.key == te2.key)
+     }
+     friend std::ostream& operator<<(std::ostream &out, const TableEntry<V> &te){
+	  out <<"LLave:" << te.key << "/"<<" Valor:" << te.value ;
+return out;}
+	  
+   friend bool operator<(const TableEntry<V> &te1, const TableEntry<V> &te2){
+		    if(te1.key < te2.key)
 			return true;
-		else 
+	    	    else
 			return false;
-		}
-
-		friend bool operator!=(const TableEntry<V> &te1, const TableEntry<V> &te2){
-		if(te1.key != te2.key)
-			return true;
-		else 
-			return false;
-		}
-
-		friend std::ostream&operator<<(std::ostream &out, const TableEntry<V> &te){
-		return out <<"Llave:"<< te.key <<", con valor:"<< te.value<< std::endl;
-		}
-     
+	    }
+	    friend bool operator>(const TableEntry<V> &te1, const TableEntry<V> &te2){
+		    if(te1.key > te2.key)
+			    return true;
+		    else
+			    return false;
+	    }	  
+	    // miembros públicos
+    
 };
 
 #endif
